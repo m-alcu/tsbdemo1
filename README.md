@@ -1,7 +1,7 @@
 # tsbdemo
 
 A C++17 / SDL3 replica of **"The Sound Barrier" demo 1**, programmed by Tran of
-Renaissance and dated 31 December 1991. Same conventions as `msmoney`: CMake,
+Renaissance and dated 31 December 1991. CMake,
 SDL3 located through pkg-config, sources in `src/`, a unit-test target for the
 non-graphical layer.
 
@@ -105,7 +105,7 @@ themselves matched in all four groups.
 
 ## Debug hook
 
-Like msmoney's `MSMONEY_SHOT`, the demo can render headless and save a frame,
+The demo can render headless and save a frame,
 so the output can be checked without a person watching:
 
 ```bash
