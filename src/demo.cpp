@@ -1,5 +1,7 @@
 #include "demo.h"
 
+#include <SDL3/SDL.h>
+
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -50,19 +52,56 @@ bool readExact(const std::string& path, void* dst, size_t n) {
     return f.gcount() == (std::streamsize)n;
 }
 
+// The pictures are 8-bit indexed BMPs. SDL keeps such a file as an INDEX8
+// surface, so its pixels are the original palette indices, which is all the
+// demo needs: the BMP's own palette is only there for image viewers. Rows are
+// copied one by one because a surface row may be padded past its width.
+bool readIndexedBmp(const std::string& path, uint8_t* dst, int w, int h, std::string& err) {
+    SDL_Surface* s = SDL_LoadBMP(path.c_str());
+    if (!s) {
+        const std::string why = SDL_GetError();
+        err = "cannot read " + path + (why.empty() ? " as a BMP" : ": " + why);
+        return false;
+    }
+    bool ok = s->format == SDL_PIXELFORMAT_INDEX8 && s->w == w && s->h == h;
+    if (!ok) {
+        err = path + " should be an 8-bit indexed BMP of " + std::to_string(w) + "x" +
+              std::to_string(h);
+    } else if (SDL_LockSurface(s)) {
+        for (int y = 0; y < h; y++)
+            std::memcpy(dst + (size_t)y * w, (const uint8_t*)s->pixels + (size_t)y * s->pitch,
+                        (size_t)w);
+        SDL_UnlockSurface(s);
+    } else {
+        err = path + ": " + SDL_GetError();
+        ok = false;
+    }
+    SDL_DestroySurface(s);
+    return ok;
+}
+
 }  // namespace
 
 bool Demo::load(const std::string& assetDir) {
     font_.resize((size_t)kFontPitch * kGlyphRows);
     const struct {
         const char* name;
+        uint8_t* dst;
+        int w, h;
+    } pictures[] = {
+        {"logo.bmp", logo_, 320, 200},
+        {"nebula.bmp", nebula_, 320, 200},
+        {"font.bmp", font_.data(), kFontPitch, kGlyphRows},
+    };
+    for (const auto& p : pictures) {
+        if (!readIndexedBmp(assetDir + "/" + p.name, p.dst, p.w, p.h, error_)) return false;
+    }
+    const struct {
+        const char* name;
         void* dst;
         size_t n;
     } files[] = {
-        {"logo.idx", logo_, sizeof(logo_)},
-        {"nebula.idx", nebula_, sizeof(nebula_)},
         {"palette.dac", dacTable_, sizeof(dacTable_)},
-        {"font.idx", font_.data(), font_.size()},
         {"charmap.bin", charmap_, sizeof(charmap_)},
         {"stars.bin", starSeeds_, sizeof(starSeeds_)},
     };

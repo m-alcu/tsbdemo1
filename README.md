@@ -74,10 +74,17 @@ code that loads them:
 python3 -I tools/extract_assets.py ../rea/tsbdemo1-analisis/TSBDEMO1.unpacked.bin assets
 ```
 
-- **`logo.idx`**, **`nebula.idx`**: the two 320x200 pictures, upper and lower.
+- **`logo.bmp`**, **`nebula.bmp`**: the two 320x200 pictures, upper and lower.
+  All three pictures are 8-bit indexed BMPs, so any image viewer opens them.
+  Their pixels are the original palette indices, and their colour table is
+  `palette.dac` scaled to 8 bits, so they show the screen once the nebula has
+  faded in. The demo reads only the indices; an editor that reorders the
+  palette on save would break the fade and the colour cycle. The hidden text
+  is in `nebula.bmp` too, invisible: raise the red of colours 40..54 in an
+  editor and it appears, which is what the colour cycle does.
 - **`palette.dac`**: the DAC values the demo uses (16..63 nebula, 224..255
   logo, font and stars).
-- **`font.idx`**, **`charmap.bin`**: the glyph sheet and the ASCII mapping
+- **`font.bmp`**, **`charmap.bin`**: the glyph sheet and the ASCII mapping
   (which remaps `x` to an apostrophe, `z` to a slash, `j` to a colon).
 - **`stars.bin`**: the star seeds.
 - **`texts.txt`**: the seventeen text lines, in the order the code shows them.

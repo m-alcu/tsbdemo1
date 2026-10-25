@@ -48,7 +48,7 @@ std::string assetDir() {
         candidates.push_back(std::string(base) + "../assets");
     }
     for (const std::string& c : candidates) {
-        SDL_IOStream* io = SDL_IOFromFile((c + "/logo.idx").c_str(), "rb");
+        SDL_IOStream* io = SDL_IOFromFile((c + "/logo.bmp").c_str(), "rb");
         if (io) {
             SDL_CloseIO(io);
             return c;
