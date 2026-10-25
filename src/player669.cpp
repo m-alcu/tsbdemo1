@@ -214,16 +214,16 @@ void Module::render(float* out, int frames, int rate) {
                 Channel& ch = chans_[c];
                 if (!ch.on || !ch.sample) continue;
                 const Sample& s = *ch.sample;
+                // A looping sample wraps at its loop end, not at the end of its
+                // data, and keeps the fractional position so the pitch holds.
+                if (s.loops && ch.pos >= s.loopEnd) {
+                    const double span = s.loopEnd - s.loopStart;
+                    ch.pos = s.loopStart + std::fmod(ch.pos - s.loopStart, span);
+                }
                 size_t p = (size_t)ch.pos;
                 if (p >= s.data.size()) {
-                    if (s.loops && s.loopEnd > s.loopStart) {
-                        size_t span = s.loopEnd - s.loopStart;
-                        p = s.loopStart + ((p - s.loopStart) % span);
-                        ch.pos = (double)p;
-                    } else {
-                        ch.on = false;
-                        continue;
-                    }
+                    ch.on = false;
+                    continue;
                 }
                 float v = ((float)s.data[p] - 128.0f) / 128.0f * ch.vol;
                 // 669 pans hard: even channels left, odd channels right. 0.85

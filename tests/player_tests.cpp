@@ -28,7 +28,7 @@ int main() {
     }
 
     check(m.patternCount() == 50, "has the 50 patterns of one full cycle");
-    check(m.sampleCount() == 11, "has 11 samples");
+    check(m.sampleCount() == 12, "has 12 samples");
     check(m.songLength() == 50, "order list covers 50 entries");
 
     // A rejected file must leave the module empty rather than half-loaded.
@@ -51,6 +51,45 @@ int main() {
     check(rms > 0.001, "a second of audio is not silence");
     check(peak <= 1.0f, "a second of audio does not clip");
 
-    std::printf(failures ? "\n%d check(s) failed\n" : "\nall checks passed\n", failures);
+    // A looping sample must wrap at its loop end, never play the bytes after
+    // it. One note on a 200-byte sample: loud before the loop, silent inside
+    // it (100..150) and loud again after it, so once the note is in the loop
+    // the output has to stay at zero.
+    {
+        std::vector<uint8_t> f(497, 0);
+        f[0] = 'i';
+        f[1] = 'f';
+        f[110] = 1;  // samples
+        f[111] = 1;  // patterns
+        for (int i = 113; i < 241; i++) f[i] = 0xFF;
+        f[113] = 0;
+        for (int i = 241; i < 369; i++) f[i] = 4;
+        for (int i = 369; i < 497; i++) f[i] = 63;
+        const uint32_t desc[3] = {200, 100, 150};
+        f.resize(f.size() + 13, 0);
+        for (uint32_t v : desc)
+            for (int b = 0; b < 4; b++) f.push_back((uint8_t)(v >> (8 * b)));
+        std::vector<uint8_t> pat(64 * 8 * 3, 0xFF);
+        pat[0] = (61 - 37) << 2;  // note 61, sample 0
+        pat[1] = 0x0F;            // volume 15
+        f.insert(f.end(), pat.begin(), pat.end());
+        for (int i = 0; i < 200; i++) f.push_back(i < 100 ? 192 : i < 150 ? 128 : 255);
+
+        const char* path = "player_tests_loop.669";
+        if (std::FILE* out = std::fopen(path, "wb")) {
+            std::fwrite(f.data(), 1, f.size(), out);
+            std::fclose(out);
+        }
+        tsb::Module lm;
+        check(lm.load(path), "loads a synthetic module with a looping sample");
+        std::remove(path);
+        lm.render(buf.data(), rate, rate);
+        float after = 0.0f;
+        for (size_t i = (size_t)rate / 20 * 2; i < buf.size(); i++)
+            after = std::max(after, std::fabs(buf[i]));
+        check(after == 0.0f, "a looping sample never plays past its loop end");
+    }
+
+    std::printf(failures ?"\n%d check(s) failed\n" : "\nall checks passed\n", failures);
     return failures ? 1 : 0;
 }

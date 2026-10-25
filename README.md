@@ -88,9 +88,12 @@ python3 -I tools/extract_assets.py ../rea/tsbdemo1-analisis/TSBDEMO1.unpacked.bi
   (which remaps `x` to an apostrophe, `z` to a slash, `j` to a colon).
 - **`stars.bin`**: the star seeds.
 - **`texts.txt`**: the seventeen text lines, in the order the code shows them.
-- **`music.669`**: one full cycle of the tune (426.7 s, 50 patterns, 11
-  samples), reconstructed by observing what the original's mixer did,
-  because its own format is proprietary and undocumented.
+- **`music.669`**: one full cycle of the tune (426.7 s, 50 patterns, 12
+  samples, two of them looping), reconstructed by observing what the
+  original's mixer did, because its own format is proprietary and
+  undocumented. Simulated tick by tick against the mixer trace, it plays the
+  same voices except for single ticks at note ends; see section 6 of
+  `../rea/tsbdemo1-analisis/README.md`.
 
 ## Verification
 
