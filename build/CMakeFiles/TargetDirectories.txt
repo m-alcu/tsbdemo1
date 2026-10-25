@@ -1,5 +1,0 @@
-/home/marti/proy/tsbdemo/build/CMakeFiles/tsbdemo.dir
-/home/marti/proy/tsbdemo/build/CMakeFiles/player_tests.dir
-/home/marti/proy/tsbdemo/build/CMakeFiles/test.dir
-/home/marti/proy/tsbdemo/build/CMakeFiles/edit_cache.dir
-/home/marti/proy/tsbdemo/build/CMakeFiles/rebuild_cache.dir
