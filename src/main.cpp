@@ -2,13 +2,13 @@
 // programmed by Tran of Renaissance, 31 December 1991.
 //
 // Layout of the sources:
-//   demo.h/.cpp       - the 320x200 indexed framebuffer, palette and starfield
+//   demo.h/.cpp       - the original's VGA state and the routines that drive it
 //   player669.h/.cpp  - Composer 669 playback (no SDL, unit-testable)
 //   main.cpp          - SDL init, audio stream and the frame loop
 //
-// The background and palette in assets/ were lifted from the original's video
-// memory; the music in assets/music.669 was reconstructed from the original
-// player. See ../rea/tsbdemo1-analisis/README.md for how.
+// The graphics in assets/ were extracted from the original executable by
+// tools/extract_assets.py; the music in assets/music.669 was reconstructed
+// from the original player. See ../rea/tsbdemo1-analisis/README.md for how.
 #include <SDL3/SDL.h>
 
 #include <cstdlib>
@@ -48,7 +48,7 @@ std::string assetDir() {
         candidates.push_back(std::string(base) + "../assets");
     }
     for (const std::string& c : candidates) {
-        SDL_IOStream* io = SDL_IOFromFile((c + "/background.idx").c_str(), "rb");
+        SDL_IOStream* io = SDL_IOFromFile((c + "/logo.idx").c_str(), "rb");
         if (io) {
             SDL_CloseIO(io);
             return c;
@@ -85,9 +85,8 @@ int main() {
         SDL_Log("music: %s (continuing without sound)", music.error().c_str());
     }
 
-    // 1280x960 is 4:3, which is how a 320x200 VGA mode actually looked: the
-    // pixels were not square. STRETCH reproduces that rather than letterboxing
-    // to 8:5.
+    // The original runs a 320x400 mode on a 4:3 monitor, so its pixels were
+    // far from square. 1280x960 with STRETCH reproduces that.
     SDL_Window* win = SDL_CreateWindow("The Sound Barrier - Renaissance 1991", 1280, 960,
                                        SDL_WINDOW_RESIZABLE);
     SDL_Renderer* ren = SDL_CreateRenderer(win, nullptr);
