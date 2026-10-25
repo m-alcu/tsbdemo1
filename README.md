@@ -84,9 +84,9 @@ python3 -I tools/extract_assets.py ../rea/tsbdemo1-analisis/TSBDEMO1.unpacked.bi
   editor and it appears, which is what the colour cycle does.
 - **`palette.dac`**: the DAC values the demo uses (16..63 nebula, 224..255
   logo, font and stars).
-- **`font.bmp`**, **`charmap.bin`**: the glyph sheet and the ASCII mapping
+- **`font.bmp`**, **`src/charmap.h`**: the glyph sheet and the ASCII mapping
   (which remaps `x` to an apostrophe, `z` to a slash, `j` to a colon).
-- **`stars.bin`**: the star seeds.
+- **`src/stars.h`**: the star seeds, with how each one is decoded.
 - **`texts.txt`**: the seventeen text lines, in the order the code shows them.
 - **`music.669`**: one full cycle of the tune (426.7 s, 50 patterns, 12
   samples, two of them looping), reconstructed by observing what the

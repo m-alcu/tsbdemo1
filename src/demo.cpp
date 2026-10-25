@@ -102,8 +102,6 @@ bool Demo::load(const std::string& assetDir) {
         size_t n;
     } files[] = {
         {"palette.dac", dacTable_, sizeof(dacTable_)},
-        {"charmap.bin", charmap_, sizeof(charmap_)},
-        {"stars.bin", starSeeds_, sizeof(starSeeds_)},
     };
     for (const auto& f : files) {
         if (!readExact(assetDir + "/" + f.name, f.dst, f.n)) {
@@ -124,7 +122,7 @@ bool Demo::load(const std::string& assetDir) {
     // 105D: every glyph is 15 columns in the sheet; its width is that minus
     // the empty columns on its right. Glyph 0 is left untrimmed, as there.
     widths_[0] = 15;
-    for (int g = 1; g < 70; g++) {
+    for (int g = 1; g < kGlyphCount; g++) {
         int empty = 0;
         for (int col = g * 15 + 14; col >= 0; col--, empty++) {
             bool any = false;
@@ -217,15 +215,13 @@ void Demo::onRetrace() {
     else if (phase_ == Phase::Pulse && pulseHold_ == 0) pulseRetrace();
 }
 
-// 0DDB. Each seed is a word and two bytes. The word picks the plane and one
-// of 400 rows; the bytes pick the column. The rows are numbered so that, with
-// the registers as they are at start-up, the stars cover the whole screen:
-// rows 0..256 fall in the lower part (VRAM from 0) and the rest in the upper
-// part, 10 bytes to the right, for reasons only Tran knew.
+// 0DDB. Places each star from its seed in stars.h, which explains the
+// decoding.
 void Demo::initStars() {
-    const uint8_t* p = starSeeds_;
-    for (Star& s : stars_) {
-        const uint16_t w = (uint16_t)(p[0] | p[1] << 8);
+    for (int i = 0; i < kStarCount; i++) {
+        Star& s = stars_[i];
+        const StarSeed& seed = kStarSeeds[i];
+        const uint16_t w = seed.word;
         const uint8_t plane = w & 3;
         s.sub = plane;
         s.drawnPlane = plane;
@@ -235,10 +231,9 @@ void Demo::initStars() {
             bias = 10;
             row += 0x142;
         }
-        const uint8_t col = (uint8_t)((p[2] ^ p[3]) % 80);
+        const uint8_t col = (uint8_t)((seed.b1 ^ seed.b2) % 80);
         s.pos = (uint16_t)(row * 80 + bias + col);
         s.toRowEnd = (uint8_t)(80 - col);
-        p += 4;
     }
 }
 
@@ -294,7 +289,7 @@ void Demo::moveStars() {
             }
         }
     }
-    for (int i = 180; i < 200; i++) {  // the fast group keeps its plane
+    for (int i = 180; i < kStarCount; i++) {  // the fast group keeps its plane
         Star& s = stars_[i];
         restore(s, 0xFE);
         uint16_t at = s.pos;
@@ -411,7 +406,11 @@ void Demo::buildStrip(int line, int row) {
     if (line < 0) return;
 
     const std::string& text = texts_[(size_t)line];
-    auto glyph = [this](char c) { return charmap_[(uint8_t)c & 0x7F]; };
+    // charmap.h; an entry past the sheet (only '{', '|', '}') draws blank
+    auto glyph = [](char c) {
+        const int g = kCharmap[(uint8_t)c & 0x7F];
+        return g < kGlyphCount ? g : 0;
+    };
     int width = 0;
     for (char c : text) width += c == ' ' ? 8 : widths_[glyph(c)] + 1;
     int x = (320 - width) >> 1;

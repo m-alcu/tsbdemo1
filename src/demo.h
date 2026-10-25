@@ -19,6 +19,9 @@
 #include <string>
 #include <vector>
 
+#include "charmap.h"
+#include "stars.h"
+
 namespace tsb {
 
 constexpr int kScreenW = 320;
@@ -71,9 +74,7 @@ private:
     uint8_t nebula_[320 * 200] = {};
     uint8_t dacTable_[768] = {};
     std::vector<uint8_t> font_;
-    uint8_t charmap_[128] = {};
-    uint8_t widths_[70] = {};
-    uint8_t starSeeds_[800] = {};
+    uint8_t widths_[kGlyphCount] = {};
     std::vector<std::string> texts_;
     std::string error_;
 
@@ -85,7 +86,7 @@ private:
     uint16_t scrollFix_ = 0x0C30;  // 1030:000C, used to re-home stars
 
     // demo state
-    Star stars_[200];
+    Star stars_[kStarCount];
     bool slowStarsTurn_ = false;   // 1030:0716
     Phase phase_ = Phase::Intro;
     int ticksLeft_ = 0;

@@ -12,8 +12,10 @@ routines at 0C97h..13F3h), not from screenshots:
                fade target (3A6B:FA30), 224..255 the logo/font/stars
                (3A6B:FCA0). Everything else is black in the original.
   font.bmp     1050x14 glyph sheet, segment 4A3Bh, 15 columns per glyph
-  charmap.bin  ASCII -> glyph index (1030:07F2)
-  stars.bin    200 x {word, byte, byte} star seeds (1030:0C7E)
+
+Two small tables are not extracted here but kept as commented C++ in src/:
+the ASCII -> glyph map of 1030:07F2 (charmap.h) and the star seeds of
+1030:0C7E (stars.h).
 
 The pictures are written as 8-bit indexed BMPs so they open in any viewer.
 The pixels are the original palette indices, untouched, and every BMP carries
@@ -68,8 +70,6 @@ def main():
     put("logo.bmp", bmp(image[at(0x2ACB):at(0x2ACB) + 64000], 320, 200, dac))
     put("nebula.bmp", bmp(image[at(0x3A6B):at(0x3A6B) + 64000], 320, 200, dac))
     put("font.bmp", bmp(image[at(0x4A3B):at(0x4A3B) + 1050 * 14], 1050, 14, dac))
-    put("charmap.bin", image[at(0x1030, 0x07F2):at(0x1030, 0x07F2) + 128])
-    put("stars.bin", image[at(0x1030, 0x0C7E):at(0x1030, 0x0C7E) + 800])
 
 
 if __name__ == "__main__":
